@@ -9,3 +9,6 @@ a.feedForward([0.5, 0.7, 0.3])
 # print(len(a.weight))
 
 a.backPropagation([1, 2, 3])
+
+a.saveWeight("asd.pickle")
+a.loadWeight("asd.pickle")

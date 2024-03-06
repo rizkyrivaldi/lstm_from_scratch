@@ -1,7 +1,8 @@
 import numpy as np
+import pickle
 
 class BPNN():
-    def __init__(self, layers = [], weight = None, activation = "tanh", alpha = 0.1):
+    def __init__(self, layers = None, weight = None, activation = "tanh", alpha = 0.1):
         """
         The layers variable is to determine the architecture of the NN
         First index indicates the number of input neurons
@@ -14,30 +15,24 @@ class BPNN():
         2 hidden layers with 5 and 7 neurons on each layers
         2 output neurons
         """
+        
+        if weight != None:
+            # Error checking
+            ## Check if the layer is type list
+            if type(layers) != list:
+                raise TypeError("layer argument must be list")
 
-        # Error checking
-        ## Check if the layer is type list
-        if type(layers) != list:
-            raise TypeError("layer argument must be list")
+            ## Check if the layer is less than 3
+            elif len(layers) < 3:
+                raise ValueError("The layer argument must include 3 element at minimum")
 
-        ## Check if the layer is less than 3
-        elif len(layers) < 3:
-            raise ValueError("The layer argument must include 3 element at minimum")
+            ## Check if the layer is multidimensional and non-integer
+            for element in layers:
+                if isinstance(element, list):
+                    raise ValueError("The size of the layer argument must be one dimension")
 
-        ## Check if the layer is multidimensional and non-integer
-        for element in layers:
-            if isinstance(element, list):
-                raise ValueError("The size of the layer argument must be one dimension")
-
-            elif type(element) != int:
-                raise TypeError("The element in layer argument must be integer")
-
-        # Neural Network Initialization
-        self.layers = layers
-        self.layers_count = len(self.layers)
-        self.input_neuron = self.layers[0]
-        self.output_neuron = self.layers[-1]
-        self.hidden_neuron = self.layers[1:-1]
+                elif type(element) != int:
+                    raise TypeError("The element in layer argument must be integer")
 
         # Variable Initialization
         self.predicted = None
@@ -47,7 +42,22 @@ class BPNN():
 
         # Generate weight if not yet initialized
         if weight == None:
+            # Neural Network Initialization
+            self.layers = layers
+            self.layers_count = len(self.layers)
+            self.input_neuron = self.layers[0]
+            self.output_neuron = self.layers[-1]
+            self.hidden_neuron = self.layers[1:-1]
+
+            # Initialize weight
             self.initializeWeight()
+
+        else:
+            self.loadWeight(weight)
+            self.layers_count = len(self.layers)
+            self.input_neuron = self.layers[0]
+            self.output_neuron = self.layers[-1]
+            self.hidden_neuron = self.layers[1:-1]
 
         # Set alpha
         self.setAlpha(alpha)
@@ -153,6 +163,9 @@ class BPNN():
         else:
             self.actual_output_vector = actual_output_vector
 
+        # Check error value
+        self.error = self.actual_output_vector - self.predicted
+
         # Start backpropagation
         weight_delta = []
         weight_bias_delta = []
@@ -164,10 +177,17 @@ class BPNN():
                 weight_bias_delta.append(self.alpha * do)
                 prev_do = do
             
-            else:
+            elif n != 0:
                 do_in = np.sum(self.weight[n+1] * prev_do[None, :], axis = 1)
                 do = do_in * self.activation_diff(self.z_in_vector[n])
                 weight_delta.append(self.alpha * self.z_out_vector[n-1][:, None] * do)
+                weight_bias_delta.append(self.alpha * do)
+                prev_do = do
+
+            else:
+                do_in = np.sum(self.weight[n+1] * prev_do[None, :], axis = 1)
+                do = do_in * self.activation_diff(self.z_in_vector[n])
+                weight_delta.append(self.alpha * self.input_vector[:, None] * do)
                 weight_bias_delta.append(self.alpha * do)
                 prev_do = do
             
@@ -176,11 +196,19 @@ class BPNN():
 
         # Update weight
         for n in range(self.layers_count - 1):
-            self.weight[n] += + weight_delta[n]
+            self.weight[n] += weight_delta[n]
             self.weight_bias[n] += weight_bias_delta[n]
 
+    def saveWeight(self, filename: str):
+        with open(filename, "wb") as fp:
+            pickle.dump([self.layers, self.weight, self.weight_bias], fp)
 
+    def loadWeight(self, filename: str):
+        with open(filename, "rb") as fp:
+            self.layers, self.weight, self.weight_bias = pickle.load(fp)
 
+    def train(input_vector, output_vector, epoch):
+        pass
 
 
     
