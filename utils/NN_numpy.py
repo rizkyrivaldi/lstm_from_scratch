@@ -375,19 +375,19 @@ class LSTM():
         self.input_vector = self.input_vector.reshape(1, self.input_neuron)
         
         # Feed Forward untuk forget gate
-        self.z_in_forget = np.matmul(self.state_vector, self.w_gforget_state) + np.matmul(self.input_vector, self.w_gforget_input) + self.w_gforget_bias
+        self.z_in_forget = np.matmul(self.state_vector_old, self.w_gforget_state) + np.matmul(self.input_vector, self.w_gforget_input) + self.w_gforget_bias
         self.z_forget = self.sigmoid(self.z_in_forget)
 
         # Feed Forward untuk input gate i
-        self.z_in_input_i = np.matmul(self.state_vector, self.w_ginput_i_state) + np.matmul(self.input_vector, self.w_ginput_i_input) + self.w_ginput_i_bias
+        self.z_in_input_i = np.matmul(self.state_vector_old, self.w_ginput_i_state) + np.matmul(self.input_vector, self.w_ginput_i_input) + self.w_ginput_i_bias
         self.z_input_i = self.sigmoid(self.z_in_input_i)
 
         # Feed Forward untuk input gate g
-        self.z_in_input_g = np.matmul(self.state_vector, self.w_ginput_g_state) + np.matmul(self.input_vector, self.w_ginput_g_input) + self.w_ginput_g_bias
+        self.z_in_input_g = np.matmul(self.state_vector_old, self.w_ginput_g_state) + np.matmul(self.input_vector, self.w_ginput_g_input) + self.w_ginput_g_bias
         self.z_input_g = np.tanh(self.z_in_input_g)
 
         # Feed Forward untuk output gate
-        self.z_in_output = np.matmul(self.state_vector, self.w_goutput_state) + np.matmul(self.input_vector, self.w_goutput_input) + self.w_goutput_bias
+        self.z_in_output = np.matmul(self.state_vector_old, self.w_goutput_state) + np.matmul(self.input_vector, self.w_goutput_input) + self.w_goutput_bias
         self.z_output = self.sigmoid(self.z_in_output)
 
         # Perhitungan Cell State (Ct)
